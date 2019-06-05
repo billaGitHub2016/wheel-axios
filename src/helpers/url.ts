@@ -1,4 +1,4 @@
-import { isDate, isObject } from './utils'
+import { isDate, isPlainObject } from './utils'
 
 function encode(val: string): string {
   const encodeStr = encodeURIComponent(val)
@@ -41,7 +41,7 @@ export function bindUrl(url: string, params?: any): string {
         }
         if (isDate(item)) {
           item = item.toDateString()
-        } else if (isObject(item)) {
+        } else if (isPlainObject(item)) {
           item = JSON.stringify(item)
         }
         parts.push(`${encode(key)}=${encode(item)}`)
