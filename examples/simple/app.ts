@@ -70,19 +70,24 @@ axios({
     method: 'post',
     url: '/base/post',
     headers: {
-        'content-type': 'application/json;charset=utf-8'
+        'content-type': 'application/json; charset=utf-8'
     },
+    responseType: 'json',
     data: {
         a: 1,
         b: 2
     }
+}).then((res) => {
+    console.log(res)
 })
 
 const paramsString = 'q=URLUtils.searchParams&topic=api'
 const searchParams = new URLSearchParams(paramsString)
 
 axios({
-  method: 'post',
-  url: '/base/post',
-  data: searchParams
+    method: 'post',
+    url: '/base/post',
+    data: searchParams
+}).then((res) => {
+    console.log(res)
 })
