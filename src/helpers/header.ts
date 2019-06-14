@@ -1,25 +1,23 @@
 import { isPlainObject } from './utils'
 
-function normalizedHeaderName(headers: any, normalizedName: string): void {
+function normalizeHeaderName(headers: any, normalizeName: string): void {
   if (!headers) {
     return
   }
-  Object.keys(headers).forEach(name => {
-    if (name !== normalizedName && name.toUpperCase() === normalizedName.toUpperCase()) {
-      // 使用 normalizedName 替换 name
-      headers[normalizedName] = headers[name]
-      delete headers[name]
+  Object.keys(headers).forEach(key => {
+    if (key !== normalizeName && key.toUpperCase() === normalizeName.toUpperCase()) {
+      headers[normalizeName] = headers[key]
+      delete headers[key]
     }
   })
 }
 
 export function processHeaders(headers: any, data: any): any {
-  // 处理 Content-Type
-  normalizedHeaderName(headers, 'Content-Type')
+  normalizeHeaderName(headers, 'Content-Type')
 
-  // data为普通对象的情况下，设置Content-Type为application/json;charset=utf-8
-  if (isPlainObject(headers)) {
+  if (isPlainObject(data)) {
     headers['Content-Type'] = 'application/json;charset=utf-8'
   }
+
   return headers
 }
