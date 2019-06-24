@@ -8,13 +8,15 @@ const WebpackConfig = require('./webpack.config')
 const app = express()
 const compiler = webpack(WebpackConfig)
 
-app.use(webpackDevMiddleware(compiler, {
+app.use(
+  webpackDevMiddleware(compiler, {
     publicPath: '/__build__/',
     stats: {
-        colors: true,
-        chunks: false
+      colors: true,
+      chunks: false
     }
-}))
+  })
+)
 
 app.use(webpackHotMiddleware(compiler))
 
@@ -24,28 +26,28 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 const router = express.Router()
-router.get('/simple/get', function (req, res) {
-    res.json({
-        msg: `hello world`
-    })
+router.get('/simple/get', function(req, res) {
+  res.json({
+    msg: `hello world`
+  })
 })
-router.get('/base/get', function (req, res) {
-    res.json(req.query)
+router.get('/base/get', function(req, res) {
+  res.json(req.query)
 })
-router.post('/base/post', function (req, res) {
-    res.json(req.body)
+router.post('/base/post', function(req, res) {
+  res.json(req.body)
 })
-router.post('/base/buffer', function (req, res) {
-    let msg = []
-    req.on('data', chunk => {
-        if (chunk) {
-            msg.push(chunk)
-        }
-    })
-    req.on('end', () => {
-        let buf = new Buffer.concat(msg)
-        res.json(buf.toJSON())
-    })
+router.post('/base/buffer', function(req, res) {
+  let msg = []
+  req.on('data', chunk => {
+    if (chunk) {
+      msg.push(chunk)
+    }
+  })
+  req.on('end', () => {
+    let buf = new Buffer.concat(msg)
+    res.json(buf.toJSON())
+  })
 })
 
 router.get('/error/get', function(req, res) {
@@ -66,9 +68,39 @@ router.get('/error/timeout', function(req, res) {
   }, 3000)
 })
 
+router.get('/extend/get', function(req, res) {
+  res.json({
+    msg: `hello world`
+  })
+})
+router.options('/extend/options', function(req, res) {
+  res.json({
+    msg: `hello options`
+  })
+})
+router.delete('/extend/delete', function(req, res) {
+  res.json({
+    msg: `hello delete`
+  })
+})
+router.head('/extend/head', function(req, res) {
+  res.json({
+    msg: `hello head`
+  })
+})
+router.post('/extend/post', function(req, res) {
+  res.json(req.body)
+})
+router.put('/extend/put', function(req, res) {
+  res.json(req.body)
+})
+router.patch('/extend/patch', function(req, res) {
+  res.json(req.body)
+})
+
 app.use(router)
 
 const port = process.env.PORT || 8081
 module.exports = app.listen(port, () => {
-    console.log(`Server listening on http://localhost:${port}, Ctrl+C to stop`)
+  console.log(`Server listening on http://localhost:${port}, Ctrl+C to stop`)
 })
