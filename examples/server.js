@@ -98,6 +98,17 @@ router.patch('/extend/patch', function(req, res) {
   res.json(req.body)
 })
 
+router.get('/extend/user', function(req, res) {
+  res.json({
+    code: 0,
+    result: {
+      name: 'user',
+      age: 1
+    },
+    message: 'ok'
+  })
+})
+
 app.use(router)
 
 const port = process.env.PORT || 8081
