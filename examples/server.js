@@ -119,6 +119,41 @@ router.get('/interceptor/get', function(req, res) {
   })
 })
 
+router.post('/config/post', function(req, res) {
+  res.json({
+    code: 0,
+    result: {
+      msg: 'config'
+    },
+    message: 'ok'
+  })
+})
+
+router.get('/cancel/get', function(req, res) {
+  setTimeout(() => {
+    res.json({
+      code: 0,
+      result: {
+        msg: 'cancel/get'
+      },
+      message: 'ok'
+    })
+  }, 0)
+})
+
+router.post('/cancel/post', function(req, res) {
+  setTimeout(() => {
+
+    res.json({
+      code: 0,
+      result: {
+        msg: 'cancel/post'
+      },
+      message: 'ok'
+    })
+  }, 500)
+})
+
 app.use(router)
 
 const port = process.env.PORT || 8081
