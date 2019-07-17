@@ -55,3 +55,33 @@ export function bindUrl(url: string, params?: any): string {
   }
   return bindUrl
 }
+
+interface URLOrigin {
+  protocol: string
+  host: string
+}
+
+/**
+ * 检查请求url是否同源的方法
+ * @param requestURL 请求的url
+ */
+export function isURLSameOrigin(requestURL: string) {
+  const requestUrlOrigin = resolveURL(requestURL)
+
+  return (
+    requestUrlOrigin.protocol === currentOrigin.protocol &&
+    requestUrlOrigin.host === currentOrigin.host
+  )
+}
+
+const urlParsingNode = document.createElement('a')
+const currentOrigin = resolveURL(window.location.href)
+function resolveURL(url: string): URLOrigin {
+  urlParsingNode.setAttribute('href', url)
+  const { protocol, host } = urlParsingNode
+
+  return {
+    protocol,
+    host
+  }
+}
