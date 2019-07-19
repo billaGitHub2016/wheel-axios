@@ -13,6 +13,11 @@ export function isPlainObject(val: any): val is Object {
   return toString.call(val) === '[object Object]'
 }
 
+// 判断是否表单数据
+export function isFormData(val: any): boolean {
+  return typeof val !== undefined && val instanceof FormData
+}
+
 export function extend<T, U>(to: T, from: U) {
   for (const key in from) {
     ;(to as T & U)[key] = from[key] as any

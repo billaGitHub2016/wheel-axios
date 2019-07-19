@@ -2,6 +2,7 @@ import { AxiosRequestConfig, AxiosResponseConfig, AxiosPromise, CancelToken } fr
 import { parseHeaders } from '../helpers/header'
 import { createError } from '../helpers/error'
 import { isURLSameOrigin } from '../helpers/url'
+import { isFormData } from '../helpers/utils'
 import cookie from '../helpers/cookie'
 
 export default function xhr(config: AxiosRequestConfig): AxiosPromise {
@@ -16,91 +17,125 @@ export default function xhr(config: AxiosRequestConfig): AxiosPromise {
       cancelToken,
       withCredentials,
       xsrfCookieName,
-      xsrfHeaderName
+      xsrfHeaderName,
+      onDownloadProgress,
+      onUploadProgress
     } = config
     const request = new XMLHttpRequest()
 
-    request.onerror = function handleError() {
-      reject(createError('Network error', config, null, request))
+    request.open(method.toUpperCase(), url!, true)
+
+    configRequest()
+
+    addEvent()
+
+    processHeaders()
+
+    processCancel()
+
+    request.send(data)
+
+    function configRequest(): void {
+      if (responseType) {
+        request.responseType = responseType
+      }
+
+      if (withCredentials) {
+        request.withCredentials = true
+      }
+
+      if (timeout) {
+        request.timeout = timeout
+      }
     }
 
-    // 有cancelToken参数，则处理
-    if (cancelToken) {
-      cancelToken.promise.then(reason => {
-        request.abort()
-        reject(reason)
+    function addEvent(): void {
+      request.onreadystatechange = function handleLoad() {
+        if (request.readyState !== 4) {
+          return
+        }
+
+        if (request.status === 0) {
+          return
+        }
+
+        const responseHeaders = parseHeaders(request.getAllResponseHeaders())
+        const responseData =
+          responseType && responseType !== 'text' ? request.response : request.responseText
+        const response: AxiosResponseConfig = {
+          data: responseData,
+          status: request.status,
+          statusText: request.statusText,
+          headers: responseHeaders,
+          config,
+          request
+        }
+        handleResponse(response)
+      }
+
+      request.onerror = function handleError() {
+        reject(createError('Network error', config, null, request))
+      }
+
+      request.ontimeout = function handleTimeout() {
+        reject(createError(`Timeout of ${timeout} ms exceeded`, config, 'ECONNABORTED', request))
+      }
+
+      if (onDownloadProgress) {
+        request.onprogress = onDownloadProgress
+      }
+
+      if (onUploadProgress) {
+        request.upload.onprogress = onUploadProgress
+      }
+    }
+
+    function processHeaders(): void {
+      if (isFormData(data)) {
+        delete headers['Content-Type']
+      }
+
+      // 设置xsrf请求头
+      if ((withCredentials || isURLSameOrigin(url!)) && xsrfCookieName) {
+        const xsrfValue = cookie.read(xsrfCookieName)
+        if (xsrfValue) {
+          headers[xsrfHeaderName!] = xsrfValue
+        }
+      }
+
+      Object.keys(headers).forEach(name => {
+        if (data === null && name.toLowerCase() === 'content-type') {
+          delete headers[name]
+        } else {
+          request.setRequestHeader(name, headers[name])
+        }
       })
     }
 
-    if (withCredentials) {
-      request.withCredentials = true
-    }
-
-    if (timeout) {
-      request.timeout = timeout
-    }
-
-    // 设置xsrf请求头
-    if ((withCredentials || isURLSameOrigin(url!)) && xsrfCookieName) {
-      const xsrfValue = cookie.read(xsrfCookieName)
-      if (xsrfValue) {
-        headers[xsrfHeaderName!] = xsrfValue
+    function processCancel(): void {
+      // 有cancelToken参数，则处理
+      if (cancelToken) {
+        cancelToken.promise.then(reason => {
+          request.abort()
+          reject(reason)
+        })
       }
     }
 
-    request.ontimeout = function handleTimeout() {
-      reject(createError(`Timeout of ${timeout} ms exceeded`, config, 'ECONNABORTED', request))
-    }
-
-    request.open(method.toUpperCase(), url!, true)
-
-    request.onreadystatechange = function handleLoad() {
-      if (request.readyState !== 4) {
-        return
-      }
-
-      if (request.status === 0) {
-        return
-      }
-
-      const responseHeaders = parseHeaders(request.getAllResponseHeaders())
-      const responseData =
-        responseType && responseType !== 'text' ? request.response : request.responseText
-      const response: AxiosResponseConfig = {
-        data: responseData,
-        status: request.status,
-        statusText: request.statusText,
-        headers: responseHeaders,
-        config,
-        request
-      }
-      handleResponse(response)
-
-      function handleResponse(response: AxiosResponseConfig) {
-        if (response.status >= 200 && response.status < 300) {
-          resolve(response)
-        } else {
-          reject(
-            createError(
-              `Request failed with status code ${response.status}`,
-              config,
-              null,
-              request,
-              response
-            )
-          )
-        }
-      }
-    }
-
-    Object.keys(headers).forEach(name => {
-      if (data === null && name.toLowerCase() === 'content-type') {
-        delete headers[name]
+    function handleResponse(response: AxiosResponseConfig) {
+      if (response.status >= 200 && response.status < 300) {
+        resolve(response)
       } else {
-        request.setRequestHeader(name, headers[name])
+        reject(
+          createError(
+            `Request failed with status code ${response.status}`,
+            config,
+            null,
+            request,
+            response
+          )
+        )
       }
-    })
-
-    request.send(data)
+    }
   })
 }
