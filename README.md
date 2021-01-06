@@ -1,5 +1,7 @@
 # TypeScript library starter
 
+
+[![Coverage Status](https://coveralls.io/repos/github/billaGitHub2016/wheel-axios/badge.svg?branch=master)](https://coveralls.io/github/billaGitHub2016/wheel-axios?branch=master)
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![Greenkeeper badge](https://badges.greenkeeper.io/alexjoverm/typescript-library-starter.svg)](https://greenkeeper.io/)
 [![Travis](https://img.shields.io/travis/alexjoverm/typescript-library-starter.svg)](https://travis-ci.org/alexjoverm/typescript-library-starter)
